@@ -1,0 +1,36 @@
+# By using Persistent Volume you can create a reusable volumes that can be defined in your kubernetes cluster
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: database
+  labels:
+    volume: my-volume
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  nfs:
+    path: /exports
+    server: 192.168.0.1
+
+---
+# Persistent Volume Claim is used to get the PersistentVolume that we defined and used it in our Pods.
+# This kind of indirection may seem overly complicated, 
+# but it has a purpose—it serves to isolate our Pod definition from our storage definition
+# By using volume claims, you can keep your Pod specifications cloud-agnostic; 
+# simply create different volumes, specific to the cloud, and use a PersistentVolumeClaim to bind them together.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: database
+spec:
+  resources:
+    requests:
+      storage: 1Gi
+  volumeMode: Filesystem
+  selector:
+    matchLabels:
+      volume: my-volume # Will get the Persistent Volume that has a volume and my-volume value.
+  accessModes:
+    - ReadWriteOnce
